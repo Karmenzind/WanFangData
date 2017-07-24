@@ -1,8 +1,5 @@
 ### WanFangData
 
-python2.7
-mongodb
-
 ******
 
 
