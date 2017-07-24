@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    {% if results %}
+        <div>
+            <p style="font-size: medium; border: medium">
+            <h4>符合搜索条件的一共有 {{ pagination.total }} 条结果：</h4>
+            </p>
+
+        </div>
+        {#    {{ pagination.info }}#}
+        {{ pagination.links|safe }}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Title</th>
+                    <th>From</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for item in results %}
+                    <tr>
+                        <td>{{ loop.index + (page - 1) * per_page }}</td>
+                        <td><a href="{{ url_for("item", obj_id=item.get("_id")) }}">{{ item.get('title')[0] }}</a></td>
+                        <td>《{{ item.get('journal_name')[0] }}》 {{ item.get('publish_issue')[0] }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    {% endif %}
+{% endblock %}
+
+{% block js %}
+    {% if active_url %}
+        $('#{{ active_url }}').addClass('active');
+    {% else %}
+        $('#users-url').addClass('active');
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+
+{% block body %}
+    {{ super() }}
+    {% block page_content %}
+        <div class="page-header" style="text-align:center;font-size: 15px">
+            <h3>热门查询</h3>
+        </div>
+        <form method="post">
+            <div class="row" style="margin:0 15%;">
+                {{ wtf.quick_form(form) }}
+            </div>
+        </form>
+        <br/>
+        <br/>
+        <br/>
+        {% if rank %}
+            <div class="table-responsive" style="margin:0 20%;">
+                <table class="table table-hover">
+                    <col style="width: 20%"/>
+                    <col style="width: 50%"/>
+                    <col style="width: 30%"/>
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Keyword</th>
+                        <th>Related Articles</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in rank %}
+                        {% set outer_loop = loop %}
+                        <tr>
+                            <td>{{ outer_loop.index }}</td>
+                            <td>{{ item[0] }}</td>
+                            <td>{{ item[1] }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    {% endblock %}
+{% endblock %}

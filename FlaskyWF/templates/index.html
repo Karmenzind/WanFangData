@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %}万方数据分析{% endblock %}
+{% block styles %}
+    {{ super() }}
+    <style>
+        .container-search {
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 600%;
+            font-family: 'Bree Serif', serif;
+        }
+
+        .btn-avan {
+            width: 100px;
+            margin-left: 45%;
+        }
+
+        #buscador {
+            margin-left: 510px;
+        }
+
+        @media screen and (max-width: 768px) {
+            .title-search {
+                font-size: 500%;
+            }
+
+            .btn-avan {
+                margin-left: 30%;
+            }
+        }
+    </style>
+{% endblock %}
+{% block body %}
+    {{ super() }}
+    {% block page_content %}
+        <link href='https://fonts.googleapis.com/css?family=Bree+Serif'
+              rel='stylesheet'
+              type='text/css'>
+        <div class="page-header" style="text-align:center">
+            <h1>WF Search</h1>
+        </div>
+
+        <form method="post">
+            <div class="row" style="margin:0 15%;">
+                {{ wtf.quick_form(form) }}
+            </div>
+
+        </form>
+
+
+    {% endblock %}
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block body %}
+    <div class="page-header" style="text-align:center;font-size: 15px">
+        <h3>{{ item.get('title')[0] }}</h3>
+    </div>
+    <div class="table-responsive" style="margin:0 15%;">
+
+        <table class="table table-hover">
+            <col style="width: 15%"/>
+            <col style="width: 85%"/>
+            <tbody>
+            <tr>
+                <td>标题</td>
+                <td>
+                    <p>{{ item.get('title')[0] }}</p>
+                    {% if item.get('title_global') %}<p>{{ item.get('title_global')[0] }}</p>{% endif %}
+                </td>
+            </tr>
+
+            {% if item.get('abstract') %}
+                <tr>
+                    <td>摘要</td>
+                    <td>{% for elem in item.get('abstract') %}<p>{{ elem }}</p>{% endfor %}</td>
+                </tr>
+            {% endif %}
+
+            {% if item.get('keywords') %}
+                <tr>
+                    <td>关键词</td>
+                    <td>{% for elem in item.get('keywords') %}{{ elem }}&nbsp;&nbsp;{% endfor %}</td>
+                </tr>
+            {% endif %}
+
+            {% if item.get('author') or item.get('author_global') %}
+                <tr>
+                    <td>作者</td>
+                    <td>{% if item.get('author') %}
+                        <p>
+                            {% for elem in item.get('author') %}{{ elem }}&nbsp;&nbsp;{% endfor %}
+                        </p>
+                    {% endif %}
+                        {% if item.get('author_global') %}
+                            <p>
+                                {% for elem in item.get('author_global') %}{{ elem }}&nbsp;&nbsp;{% endfor %}
+                            </p>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endif %}
+
+            {% if item.get('company') %}
+                <tr>
+                    <td>单位</td>
+                    <td>{% for elem in item.get('company') %}<p>{{ elem }}</p>{% endfor %}</td>
+                </tr>
+            {% endif %}
+
+            {% if item.get('journal_name') %}
+                <tr>
+                    <td>出版</td>
+                    <td>
+                        <p>
+                            《<a href="{{ item.get('journal_url')[0] }}">{{ item.get('journal_name')[0] }}</a>》 {{ item.get('publish_issue')[0] }}
+                        </p>
+                    </td>
+                </tr>
+            {% endif %}
+
+            <tr>
+                <td>上线</td>
+                <td><p>{{ item.get('ol_publish_time')[0] }}</p></td>
+            </tr>
+
+            <tr>
+                <td>资源</td>
+                <td>
+                    <a href="{{ item.get('from_url')[0] }}">查看出处</a>
+                    {% if item.get('dl_url') %}
+                        &nbsp;&nbsp;<a href="{{ item.get('dl_url')[0] }}">下载原文</a>
+                    {% endif %}
+                </td>
+            </tr>
+
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}
