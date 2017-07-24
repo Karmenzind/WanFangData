@@ -43,17 +43,17 @@ spiders目录下有5个爬虫，按顺序执行:
 主要功能有：
 
 1. 根据标题、作者等进行搜索
-	主页:
+	* 主页
 	![home](./WFSpider/examples/home.jpg "HOME")
-	搜索结果:
+	* 搜索结果
 	![searchresult.png](./WFSpider/examples/searchresult.png)
-	条目详情:
+	* 条目详情
 	![item2](./WFSpider/examples/item2.png)
 
 2. 输入任意时间范围和领域，查看Top100的热门作者、关键词以及对应的文章数量
-	热门查询:
+	* 热门查询
 	![popular.png](./WFSpider/examples/popular.png)
-	查询结果:
+	* 查询结果
 	![popular_res2.png](./WFSpider/examples/popular_res2.png)
 
 
