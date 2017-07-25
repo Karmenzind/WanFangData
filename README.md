@@ -5,7 +5,7 @@
 
 #### 爬虫部分
 
-###### :point_up: 此爬虫仅针对万方网站的“期刊”模块，如果要爬其他模块，需要对WFbase和WFindex做一些修改
+###### :point_up: 此爬虫仅针对[万方数据知识服务平台](http://g.wanfangdata.com.cn/)网站的“[期刊](http://c.g.wanfangdata.com.cn/Periodical.aspx)”模块，如果要爬其他模块，需要对WFbase和WFindex做一些修改
 
 
 爬虫基于Scrapy和MongoDB
