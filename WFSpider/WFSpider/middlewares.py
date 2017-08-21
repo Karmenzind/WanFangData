@@ -14,8 +14,9 @@ from WFSpider import settings
 
 logger = logging.getLogger(__name__)
 
-with open('./WFSpider/dbconfig.yaml') as f:
-    __mysql_setting = yaml.load(f).get('mysql')
+if settings.USE_PROXY:
+    with open('./WFSpider/dbconfig.yaml') as f:
+        __mysql_setting = yaml.load(f).get('mysql')
 
 
 def obtain_proxy():
