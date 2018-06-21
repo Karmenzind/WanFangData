@@ -3,7 +3,7 @@ import scrapy
 import logging
 import random
 from WFSpider import settings
-from urlparse import urljoin
+from urllib.parse import urljoin
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
 from WFSpider.pipelines import MongoDBPipleline
@@ -11,7 +11,6 @@ from scrapy.http import Request
 from scrapy.loader import ItemLoader
 from scrapy.loader.processors import MapCompose
 from WFSpider.items import (PublishTimeItem)
-from progressbar import ProgressBar
 
 '''
 补爬上线日期
@@ -38,11 +37,10 @@ class WfcoreSpider(CrawlSpider):
         find_res = list(find_res)
         res_num = len(find_res)
         find_res = random.sample(find_res, res_num)
-        with ProgressBar(max_value=res_num) as bar:
-            for idx, art_item in enumerate(find_res):
-                url = art_item['from_url'][0]
-                yield Request(url=url, callback=self.parse_article)
-                bar.update(idx + 1)
+        for idx, art_item in enumerate(find_res):
+            url = art_item['from_url'][0]
+            yield Request(url=url, callback=self.parse_article)
+            bar.update(idx + 1)
 
     def parse_article(self, response):
         l = ItemLoader(item=PublishTimeItem(), response=response)

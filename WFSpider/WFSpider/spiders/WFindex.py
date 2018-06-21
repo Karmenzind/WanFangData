@@ -29,7 +29,7 @@ class WfindexSpider(CrawlSpider):
         base_url = 'http://c.g.wanfangdata.com.cn/%s'
         try:
             response.meta['_class'].pop('sub_class')
-        except KeyError, e:
+        except KeyError as e:
             logger.debug(e)
         for item in response.xpath('//*[@id="divperilist"]/ul/li'):
             l = ItemLoader(item=JournalItem(), selector=item)

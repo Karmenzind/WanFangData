@@ -11,7 +11,7 @@ from WFSpider.items import *
 class MongoDBPipleline(object):
     def __init__(self):
         client = pymongo.MongoClient("localhost", 27017)
-        db = client["WanFang"]
+        db = client["WF"]
         self.mainindex = db["MainIndex"]
         self.journal = db["Journal"]
         self.article = db["Article"]
@@ -21,7 +21,7 @@ class MongoDBPipleline(object):
         if isinstance(item, SubjectItem):
             try:
                 self.mainindex.insert(item)
-            except Exception, e:
+            except Exception as e:
                 spider.logger.exception("")
         elif isinstance(item, JournalItem):
             try:

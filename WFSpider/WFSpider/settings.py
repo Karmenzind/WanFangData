@@ -20,7 +20,7 @@ NEWSPIDER_MODULE = 'WFSpider.spiders'
 # USER_AGENT = 'WFSpider (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 CONCURRENT_REQUESTS = 32
@@ -45,14 +45,6 @@ DEFAULT_REQUEST_HEADERS = _headers
 # SPIDER_MIDDLEWARES = {
 #    'WFSpider.middlewares.WfspiderSpiderMiddleware': 543,
 # }
-
-# Enable or disable downloader middlewares
-# See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
-DOWNLOADER_MIDDLEWARES = {
-    "WFSpider.middlewares.UserAgentMiddleware": 401,
-    'scrapy.contrib.downloadermiddleware.httpproxy.HttpProxyMiddleware': 110,
-    'scrapy.contrib.downloadermiddleware.retry.RetryMiddleware': 300
-}
 
 # Enable or disable extensions
 # See http://scrapy.readthedocs.org/en/latest/topics/extensions.html
@@ -87,7 +79,7 @@ ITEM_PIPELINES = {
 # HTTPCACHE_IGNORE_HTTP_CODES = []
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
-DOWNLOAD_DELAY = 1
+DOWNLOAD_DELAY = 0
 LOG_LEVEL = 'DEBUG'
 
 RETRY_ENABLED = 1
@@ -97,7 +89,23 @@ RETRY_TIMES = 10
 # See http://scrapy.readthedocs.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
 
-# CUSTOMIZATION
+#######################################################################
+#                               CUSTOM                                #
+#######################################################################
+
 TARGET_YEAR = ['2017']
 USE_PROXY = 0
 
+# /* for fp-server */
+# and don't use scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware
+# at the same time
+DOWNLOADER_MIDDLEWARES = {
+    "WFSpider.middlewares.UserAgentMiddleware": 401,
+    'scrapy.contrib.downloadermiddleware.retry.RetryMiddleware': 300,
+    'WFSpider.middlewares.FPServerMiddleware': 745,
+}
+
+# follow your real settings
+FP_SERVER_URL = 'http://localhost:12345'
+FP_SERVER_PROXY_ANONYMITY = 'anonymous'
+# HTTPPROXY_AUTH_ENCODING = 'latin-l'

@@ -1,5 +1,23 @@
 ### WanFangData
 
+Python3兼容分支
+
+**在语法上**做了修改以支持Python3运行，但主要代码结构和内容没有变更，将原先的代理部分换成了我刚写的[FP-Server](https://github.com/Karmenzind/fp-server)。
+
+要顺利爬取内容，需要自己手动修改爬虫代码，来适应最新的网站结构。
+
+兼容修改完成的部分：
+- WFSpider
+
+安装环境：
+- 直接运行
+    ```
+    pip install requirements.txt
+    ```
+- 安装运行[FP-Server](https://github.com/Karmenzind/fp-server)以提供代理
+- Windows系统可能需要安装其他package
+
+
 ******
 
 

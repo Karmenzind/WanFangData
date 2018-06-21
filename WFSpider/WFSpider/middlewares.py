@@ -1,38 +1,21 @@
 # -*- coding: utf-8 -*-
 
-# Define here the models for your spider middleware
-#
-# See documentation in:
-# http://doc.scrapy.org/en/latest/topics/spider-middleware.html
-import random
-import mysql.connector
-import yaml
 import logging
-from WFSpider.user_agents import agents
+import random
+from urllib.parse import urljoin
+
+import requests
+import yaml
 from scrapy import signals
+from scrapy.downloadermiddlewares.httpproxy import HttpProxyMiddleware
+from scrapy.exceptions import NotConfigured
+from scrapy.utils.httpobj import urlparse_cached
+from six.moves.urllib.request import proxy_bypass
+
 from WFSpider import settings
+from WFSpider.user_agents import agents
 
 logger = logging.getLogger(__name__)
-
-if settings.USE_PROXY:
-    with open('./WFSpider/dbconfig.yaml') as f:
-        __mysql_setting = yaml.load(f).get('mysql')
-
-
-def obtain_proxy():
-    config = {'raise_on_warnings': True, }
-    config.update(__mysql_setting)
-    cnx = mysql.connector.connect(**config)
-    cursor = cnx.cursor(dictionary=True)
-    _sql = '''SELECT * FROM `local_proxies`
-                WHERE failure_time = 0 
-                AND need_auth = 0 
-                ORDER BY create_time DESC LIMIT 100;'''
-    cursor.execute(_sql)
-    query_res = cursor.fetchall()
-    cursor.close()
-    cnx.close()
-    return random.choice(query_res)
 
 
 class UserAgentMiddleware(object):
@@ -41,55 +24,124 @@ class UserAgentMiddleware(object):
     def process_request(self, request, spider):
         agent = random.choice(agents)
         request.headers["User-Agent"] = agent
+
         if settings.USE_PROXY:
             proxy = obtain_proxy()['detail'].strip()
             request.meta['proxy'] = proxy
             logger.debug("Applying proxy: %s" % proxy)
 
 
-class WfspiderSpiderMiddleware(object):
-    # Not all methods need to be defined. If a method is not defined,
-    # scrapy acts as if the spider middleware does not modify the
-    # passed objects.
+class FPServerMiddleware(HttpProxyMiddleware):
+    """
+    A middleware, based on FPServer, continuesly fetch random proxy
+    and set it for each request.
+    FPServer required.
+
+    required config items: (Must/Optional)
+        FP_SERVER_URL               M
+        HTTPPROXY_AUTH_ENCODING     O   default: latin-l
+        FP_SERVER_PROXY_ANONYMITY   O   default: random
+            choices:    `transparent` `anonymous`
+    """
+
+    def __init__(self,
+                 crawler,
+                 auth_encoding,
+                 fps_url,
+                 anonymity):
+
+        if not fps_url:
+            raise NotConfigured('FP_SERVER_URL not configured')
+
+        self.fps_api = urljoin(fps_url, '/api/proxy/')
+
+        self.anonymity = anonymity
+
+        self.logger = crawler.spider.logger
+        self.crawler = crawler
+        self.auth_encoding = auth_encoding
+
+    def fetch_proxy(self, scheme):
+        """
+        Get proxy from fpserver by given scheme.
+
+        :scheme: `str` proxy protocol
+        :return:
+            url, scheme
+        """
+
+        params = {
+            "scheme": scheme,
+            "anonymity": self.anonymity,
+        }
+        text = None
+        try:
+            req = requests.get(self.fps_api, params=params)
+            text = req.text
+            data = req.json()
+        except:
+            self.crawler.logger.exception(
+                "Failed to fetch proxy: %s" % text)
+        else:
+            _code = data.get('code')
+            _proxies = data.get('data', {}).get('detail', [])
+
+            if (_code is not 0) or (not _proxies):
+                self.logger.warning(
+                    'Response of fetch_proxy: %s' % data)
+
+                return
+            proxy_info = _proxies[0]
+            proxy_url = proxy_info['url']
+
+            return self._get_proxy(proxy_url, scheme)
 
     @classmethod
     def from_crawler(cls, crawler):
-        # This method is used by Scrapy to create your spiders.
-        s = cls()
-        crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
-        return s
+        auth_encoding = crawler.settings.get('HTTPPROXY_AUTH_ENCODING',
+                                             'latin-l')
+        fps_url = crawler.settings.get('FP_SERVER_URL')
+        anonymity = crawler.settings.get('FP_SERVER_PROXY_ANONYMITY')
 
-    def process_spider_input(response, spider):
-        # Called for each response that goes through the spider
-        # middleware and into the spider.
+        return cls(crawler, auth_encoding, fps_url, anonymity)
 
-        # Should return None or raise an exception.
-        return None
+    def _set_proxy(self, request, scheme):
+        _fetched = self.fetch_proxy(scheme)
 
-    def process_spider_output(response, result, spider):
-        # Called with the results returned from the Spider, after
-        # it has processed the response.
+        if not _fetched:
+            self.logger.debug('No proxy fetched from fp-server.')
 
-        # Must return an iterable of Request, dict or Item objects.
-        for i in result:
-            yield i
+            return
 
-    def process_spider_exception(response, exception, spider):
-        # Called when a spider or process_spider_input() method
-        # (from other spider middleware) raises an exception.
+        creds, proxy = _fetched
+        request.meta['proxy'] = proxy
+        self.logger.debug('Applied proxy: %s' % proxy)
 
-        # Should return either None or an iterable of Response, dict
-        # or Item objects.
-        pass
+        if creds:
+            request.headers['Proxy-Authorization'] = b'Basic' + creds
 
-    def process_start_requests(start_requests, spider):
-        # Called with the start requests of the spider, and works
-        # similarly to the process_spider_output() method, except
-        # that it doesn’t have a response associated.
+    def process_request(self, request, spider):
+        # ignore if proxy is already set
 
-        # Must return only requests (not items).
-        for r in start_requests:
-            yield r
+        if 'proxy' in request.meta:
+            if request.meta['proxy'] is None:
+                return
 
-    def spider_opened(self, spider):
-        spider.logger.info('Spider opened: %s' % spider.name)
+            # extract credentials if present
+            creds, proxy_url = self._get_proxy(request.meta['proxy'], '')
+            request.meta['proxy'] = proxy_url
+
+            if creds and not request.headers.get('Proxy-Authorization'):
+                request.headers['Proxy-Authorization'] = b'Basic ' + creds
+
+            return
+
+        parsed = urlparse_cached(request)
+        scheme = parsed.scheme
+
+        # 'no_proxy' is only supported by http schemes
+
+        if scheme in ('http', 'https') and proxy_bypass(parsed.hostname):
+            return
+
+        self._set_proxy(request, scheme)
