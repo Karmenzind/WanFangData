@@ -32,5 +32,5 @@ six==1.11.0
 Twisted==18.4.0
 urllib3==1.23
 w3lib==1.19.0
-Werkzeug==0.14.1
+Werkzeug==0.15.3
 zope.interface==4.5.0
